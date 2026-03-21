@@ -1,0 +1,32 @@
+[gd_scene format=3 uid="uid://btsfldvlv4elf"]
+
+[ext_resource type="Texture2D" uid="uid://dl2cba6ijv2ye" path="res://Sprites/Blue.png" id="1_glv2v"]
+[ext_resource type="Texture2D" uid="uid://bua6203kvw7dx" path="res://Sprites/BluePRESS.png" id="2_uu6xs"]
+[ext_resource type="Script" uid="uid://cgpwajdbecyr5" path="res://BlueButton001.cs" id="3_r0du0"]
+[ext_resource type="Script" uid="uid://dayf3y56ty5vo" path="res://score.cs" id="4_cm0pq"]
+
+[node name="Node2D" type="Node2D" unique_id=1129048846]
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1264260983]
+anchor_mode = 0
+
+[node name="TextureButton" type="TextureButton" parent="." unique_id=546544716]
+offset_left = 475.0
+offset_top = 137.0
+offset_right = 1392.0
+offset_bottom = 933.0
+texture_normal = ExtResource("1_glv2v")
+texture_pressed = ExtResource("2_uu6xs")
+script = ExtResource("3_r0du0")
+
+[node name="Label" type="Label" parent="TextureButton" unique_id=147717072]
+layout_mode = 0
+offset_left = -475.0
+offset_top = -137.0
+offset_right = 259.0
+offset_bottom = -68.0
+theme_override_font_sizes/font_size = 50
+text = "This is the text of a label node."
+script = ExtResource("4_cm0pq")
+
+[connection signal="pressed" from="TextureButton" to="TextureButton" method="OnPressed"]
