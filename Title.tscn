@@ -1,30 +1,51 @@
 [gd_scene format=3 uid="uid://btsfldvlv4elf"]
 
-[node name="TitleScreen" type="Node2D" unique_id=1129048846]
+[ext_resource type="Script" uid="uid://i7hh2aajhaoa" path="res://PlayButton.cs" id="1_c0dwi"]
 
-[node name="TitleScreenCamera" type="Camera2D" parent="." unique_id=1264260983]
-anchor_mode = 0
+[node name="Control" type="Control" unique_id=2013784710]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="TutorialButton" type="Button" parent="TitleScreenCamera" unique_id=1640947429]
-offset_left = 635.0
-offset_top = 425.0
-offset_right = 1285.0
-offset_bottom = 625.0
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=175017455]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -220.0
+offset_right = 200.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=102006634]
+layout_mode = 2
+theme_override_constants/separation = 40
+alignment = 1
+
+[node name="PlayButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1125473321]
+custom_minimum_size = Vector2(400, 120)
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+text = "Play"
+script = ExtResource("1_c0dwi")
+
+[node name="TutorialButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=374038103]
+custom_minimum_size = Vector2(400, 120)
+layout_mode = 2
 theme_override_font_sizes/font_size = 40
 text = "How To Play"
 
-[node name="PlayButton" type="Button" parent="TitleScreenCamera" unique_id=478950495]
-offset_left = 635.0
-offset_top = 100.0
-offset_right = 1285.0
-offset_bottom = 300.0
-theme_override_font_sizes/font_size = 40
-text = "Play"
-
-[node name="Quit Button" type="Button" parent="TitleScreenCamera" unique_id=727559595]
-offset_left = 635.0
-offset_top = 750.0
-offset_right = 1285.0
-offset_bottom = 950.0
+[node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1689698181]
+custom_minimum_size = Vector2(400, 120)
+layout_mode = 2
 theme_override_font_sizes/font_size = 40
 text = "Quit"
+
+[connection signal="pressed" from="CenterContainer/VBoxContainer/PlayButton" to="CenterContainer/VBoxContainer/PlayButton" method="OnPressed"]
