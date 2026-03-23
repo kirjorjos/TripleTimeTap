@@ -3,9 +3,35 @@
 [ext_resource type="Script" uid="uid://b60qdn83ym2di" path="res://Past.cs" id="1_c83py"]
 [ext_resource type="Texture2D" uid="uid://c4sbvf5gp64y4" path="res://Sprites/Run.png" id="1_js370"]
 [ext_resource type="Texture2D" uid="uid://bal2e2nj2bkk3" path="res://Sprites/Past.png" id="2_c83py"]
+[ext_resource type="Texture2D" uid="uid://cpt2vit3k2bdo" path="res://Sprites/Jump.png" id="2_gntsk"]
+[ext_resource type="Texture2D" uid="uid://djaflhnhlc2ej" path="res://Sprites/Roll.png" id="3_g8gc4"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_qrdio"]
 height = 32.399998
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4elpe"]
+atlas = ExtResource("2_gntsk")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rq2ti"]
+atlas = ExtResource("2_gntsk")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_p0u22"]
+atlas = ExtResource("2_gntsk")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_x8uv7"]
+atlas = ExtResource("3_g8gc4")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_78rtr"]
+atlas = ExtResource("3_g8gc4")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_riuit"]
+atlas = ExtResource("3_g8gc4")
+region = Rect2(0, 0, 32, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_n3qqk"]
 atlas = ExtResource("1_js370")
@@ -21,6 +47,34 @@ region = Rect2(0, 0, 32, 32)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_4elpe"]
 animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4elpe")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rq2ti")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_p0u22")
+}],
+"loop": true,
+"name": &"Jump",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_x8uv7")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_78rtr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_riuit")
+}],
+"loop": true,
+"name": &"Roll",
+"speed": 5.0
+}, {
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_n3qqk")
@@ -117,7 +171,6 @@ shape = SubResource("CapsuleShape2D_qrdio")
 scale = Vector2(5, 5)
 sprite_frames = SubResource("SpriteFrames_4elpe")
 animation = &"Run"
-frame_progress = 0.5275862
 
 [node name="PlayerCamera" type="Camera2D" parent="Player" unique_id=303780469]
 position_smoothing_enabled = true

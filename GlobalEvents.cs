@@ -17,7 +17,10 @@ public partial class GlobalEvents : Node
 	private double yVelocity = 0.0;
 	private const double gravity = 1200.0;
 	private bool isRolling = false;
+	private bool justCycledTime = false;
+	private SceneTreeTimer cycleTimeTimer;
 	private static Random rng = new Random();
+	private const double cycleTimeChargeTime = 1.0;
 
 	public enum Actions {
 		cycleTime,
@@ -26,53 +29,73 @@ public partial class GlobalEvents : Node
 		clear
 	}
 
-	public const double DoubleTapSecDelay = 0.25;
 
 	public override void _Input(InputEvent @event) {
-		if (@event.IsActionPressed("MainButton")) {
-			double currentTime = Time.GetTicksMsec() / 1000.0;
-			isActionHeld = true;
+		if (currentWorld == null) return;
 
-			if (currentTime - lastTapTime < DoubleTapSecDelay) {
-				isDoubleTapping = true;
-				lastTapTime = -1.0;
-			} else {
-				isDoubleTapping = false;
-				lastTapTime = currentTime;
-				
-				clickTimer = GetTree().CreateTimer(DoubleTapSecDelay);
-				clickTimer.Timeout += OnSingleTapTimeout;
+		if (@event.IsActionPressed("MainButton")) {
+			CharacterBody2D player = currentWorld.GetNode<CharacterBody2D>("Player");
+			bool isGrounded = player.TestMove(player.GlobalTransform, new Vector2(0, 1));
+
+			isActionHeld = true;
+			justCycledTime = false;
+
+			if (!isGrounded) {
+				isRolling = true;
 			}
+
+			cycleTimeTimer = GetTree().CreateTimer(cycleTimeChargeTime);
+			cycleTimeTimer.Timeout += OnTimeJumpTimeout;
 		} else if (@event.IsActionReleased("MainButton")) {
+			cycleTimeTimer = null;
+
+			if (!isRolling && !justCycledTime) {
+				TickLoop(Actions.jump);
+			}
+
 			isActionHeld = false;
+			isRolling = false;
 		}
 	}
 
-	private void OnSingleTapTimeout() {
-		if (!isDoubleTapping && !isActionHeld) TickLoop(Actions.cycleTime);
+	private void OnTimeJumpTimeout() {
+		if (isActionHeld) {
+			CharacterBody2D player = currentWorld.GetNode<CharacterBody2D>("Player");
+			bool isGrounded = player.TestMove(player.GlobalTransform, new Vector2(0, 1));
+
+			if (!isRolling && isGrounded) {
+				TickLoop(Actions.cycleTime);
+			}
+			justCycledTime = true;
+		}
 	}
 
 	public override void _Process(double delta) {
 		if (currentWorld == null) return;
 
-		if (isActionHeld) {
-			TickLoop(isDoubleTapping ? Actions.roll : Actions.jump);
+		if (isActionHeld && isRolling) {
+			TickLoop(Actions.roll);
 		} else {
 			TickLoop(Actions.clear);
 		}
-
 		CharacterBody2D player = currentWorld.GetNode<CharacterBody2D>("Player");
 		AnimatedSprite2D animation = player.GetNode<AnimatedSprite2D>("PlayerSprite");
-		
+
 		bool isGrounded = player.TestMove(player.GlobalTransform, new Vector2(0, 1));
 		if (!isGrounded) {
 			yVelocity += gravity * delta;
-		} else if (yVelocity > 0) {
-			yVelocity = 0;
+			if (!isRolling && animation.Animation != "Jump") {
+				animation.Play("Jump");
+			}
+		} else {
+			if (yVelocity > 0) yVelocity = 0;
 		}
 
-		animation.Play("Run");
-
+		if (isRolling) {
+			animation.Play("Roll");
+		} else if (isGrounded) {
+			animation.Play("Run");
+		}
 		Vector2 motion = new Vector2((float)runSpeed * (float)delta, (float)yVelocity * (float)delta);
 
 		foreach (Node child in currentWorld.GetChildren()) {
@@ -89,8 +112,11 @@ public partial class GlobalEvents : Node
 		bool isGrounded = player.TestMove(player.GlobalTransform, new Vector2(0, 1));
 
 		switch(currentAction) {
+			case Actions.cycleTime:
+				if (lastAction != Actions.cycleTime) GD.Print("Time cycle called");
+				break;
 			case Actions.jump:
-				if (lastAction != Actions.jump && isGrounded) {
+				if (isGrounded) {
 					yVelocity = -600.0;
 				}
 				break;
