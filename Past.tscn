@@ -164,19 +164,18 @@ script = ExtResource("1_c83py")
 [node name="Player" type="CharacterBody2D" parent="." unique_id=989945733]
 
 [node name="PlayerCollision" type="CollisionShape2D" parent="Player" unique_id=1549347929]
-scale = Vector2(5, 5)
 shape = SubResource("CapsuleShape2D_qrdio")
 
 [node name="PlayerSprite" type="AnimatedSprite2D" parent="Player" unique_id=830059255]
-scale = Vector2(5, 5)
 sprite_frames = SubResource("SpriteFrames_4elpe")
 animation = &"Run"
 
 [node name="PlayerCamera" type="Camera2D" parent="Player" unique_id=303780469]
+zoom = Vector2(5, 5)
 position_smoothing_enabled = true
 
 [node name="Layer0" type="TileMapLayer" parent="." unique_id=1739581088]
 texture_filter = 1
 use_parent_material = true
-scale = Vector2(10, 10)
+scale = Vector2(2, 2)
 tile_set = SubResource("TileSet_p0u22")

@@ -14,10 +14,6 @@ config/name="TripleTimeTap"
 run/main_scene="uid://btsfldvlv4elf"
 config/features=PackedStringArray("4.6", "C#", "Forward Plus")
 
-[autoload]
-
-GlobalEvents="*uid://bsbvutg2luhbx"
-
 [display]
 
 window/size/viewport_width=1920
@@ -25,7 +21,7 @@ window/size/viewport_height=1080
 
 [dotnet]
 
-project/assembly_name="GodotButtons001"
+project/assembly_name="TripleTimeTap"
 
 [input]
 
