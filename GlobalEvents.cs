@@ -7,9 +7,6 @@ public partial class GlobalEvents : Node {
 	private static int MinPlatformWidth = 15;
 	private static int MaxPlatformWidth = 30;
 	private bool isActionHeld;
-	private bool isDoubleTapping;
-	private double lastTapTime;
-	private SceneTreeTimer clickTimer;
 	private Actions lastAction;
 	public static Node2D currentWorld;
 	public static double runSpeed = 200.0;
@@ -17,16 +14,12 @@ public partial class GlobalEvents : Node {
 	private const double gravity = 1200.0;
 	private double yVelocity = 0.0;
 	private bool isRolling = false;
-	private bool justCycledTime = false;
-	private SceneTreeTimer cycleTimeTimer;
 	private static Random rng = new Random();
-	private const double cycleTimeChargeTime = 1.0;
 	private static int nextSpawnX = 0;
 	private static int lastY = 0;
 	private static int lastCleanupX = -100;
 
 	public enum Actions {
-		cycleTime,
 		jump,
 		roll,
 		clear
@@ -41,35 +34,18 @@ public partial class GlobalEvents : Node {
 			bool isGrounded = player.TestMove(player.GlobalTransform, new Vector2(0, 1));
 
 			isActionHeld = true;
-			justCycledTime = false;
-
-			if (!isGrounded) {
+			if (isGrounded) {
+				TickLoop(Actions.jump);
+			} else {
 				isRolling = true;
 			}
-
-			cycleTimeTimer = GetTree().CreateTimer(cycleTimeChargeTime);
-			cycleTimeTimer.Timeout += OnTimeJumpTimeout;
 		} else if (@event.IsActionReleased("MainButton")) {
-			cycleTimeTimer = null;
-
-			if (!isRolling && !justCycledTime) {
+			if (!isRolling) {
 				TickLoop(Actions.jump);
 			}
 
 			isActionHeld = false;
 			isRolling = false;
-		}
-	}
-
-	private void OnTimeJumpTimeout() {
-		if (isActionHeld) {
-			CharacterBody2D player = currentWorld.GetNode<CharacterBody2D>("Player");
-			bool isGrounded = player.TestMove(player.GlobalTransform, new Vector2(0, 1));
-
-			if (!isRolling && isGrounded) {
-				TickLoop(Actions.cycleTime);
-			}
-			justCycledTime = true;
 		}
 	}
 
@@ -143,9 +119,6 @@ public partial class GlobalEvents : Node {
 		bool isGrounded = player.TestMove(player.GlobalTransform, new Vector2(0, 1));
 
 		switch(currentAction) {
-			case Actions.cycleTime:
-				if (lastAction != Actions.cycleTime) GD.Print("Time cycle called");
-				break;
 			case Actions.jump:
 				if (isGrounded) {
 					yVelocity = jumpStrength;
