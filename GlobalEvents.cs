@@ -4,14 +4,14 @@ using System;
 public partial class GlobalEvents : Node {
 	private static int MinPlatformHeight = 2;
 	private static int MaxPlatformHeight = 6;
-	private static int MinPlatformWidth = 15;
+	private static int MinPlatformWidth = 5;
 	private static int MaxPlatformWidth = 30;
 	private bool isActionHeld;
 	private Actions lastAction;
 	public static Past currentWorld;
-	public static double runSpeed = 200.0;
-	private const double jumpStrength = -120.0;
-	private const double gravity = 1200.0;
+	public static double runSpeed = 275.0;
+	private const double jumpStrength = -400.0;
+	private const double gravity = 1400.0;
 	private const float collisionSnapTolerance = 0.05f;
 	private double yVelocity = 0.0;
 	private bool isRolling = false;
