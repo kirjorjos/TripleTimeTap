@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://btsfldvlv4elf"]
 
 [ext_resource type="Script" uid="uid://i7hh2aajhaoa" path="res://PlayButton.cs" id="1_c0dwi"]
+[ext_resource type="Script" path="res://QuitButton.cs" id="2_eaw4b"]
 
 [node name="Control" type="Control" unique_id=2013784710]
 layout_mode = 3
@@ -47,5 +48,7 @@ custom_minimum_size = Vector2(400, 120)
 layout_mode = 2
 theme_override_font_sizes/font_size = 40
 text = "Quit"
+script = ExtResource("2_eaw4b")
 
 [connection signal="pressed" from="CenterContainer/VBoxContainer/PlayButton" to="CenterContainer/VBoxContainer/PlayButton" method="OnPressed"]
+[connection signal="pressed" from="CenterContainer/VBoxContainer/QuitButton" to="CenterContainer/VBoxContainer/QuitButton" method="OnPressed"]
