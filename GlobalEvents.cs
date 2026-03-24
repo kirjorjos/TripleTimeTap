@@ -4,17 +4,18 @@ using System;
 public partial class GlobalEvents : Node {
 	private static int MinPlatformHeight = 2;
 	private static int MaxPlatformHeight = 6;
-	private static int MinPlatformWidth = 10;
-	private static int MaxPlatformWidth = 25;
+	private static int MinPlatformWidth = 15;
+	private static int MaxPlatformWidth = 30;
 	private bool isActionHeld;
 	private bool isDoubleTapping;
 	private double lastTapTime;
 	private SceneTreeTimer clickTimer;
 	private Actions lastAction;
 	public static Node2D currentWorld;
-	public static double runSpeed = 1000.0;
-	private double yVelocity = 0.0;
+	public static double runSpeed = 200.0;
+	private const double jumpStrength = -120.0;
 	private const double gravity = 1200.0;
+	private double yVelocity = 0.0;
 	private bool isRolling = false;
 	private bool justCycledTime = false;
 	private SceneTreeTimer cycleTimeTimer;
@@ -147,7 +148,7 @@ public partial class GlobalEvents : Node {
 				break;
 			case Actions.jump:
 				if (isGrounded) {
-					yVelocity = -120.0;
+					yVelocity = jumpStrength;
 				}
 				break;
 			case Actions.roll:
@@ -175,6 +176,7 @@ public partial class GlobalEvents : Node {
 		int sourceId = 0;
 
 		var palette = world.Palette;
+		topLeftPos = FindOpenPlatformPosition(topLeftPos, width, height, tileMap);
 		GD.Print($"Generating platform at {topLeftPos} (Width: {width})");
 
 		for (int y = 0; y < height; y++) {
@@ -221,7 +223,30 @@ public partial class GlobalEvents : Node {
 			}
 		}
 
+		nextSpawnX = topLeftPos.X + width;
+		lastY = topLeftPos.Y;
+
 		return new Vector2I(width, height);
 	}
-}
 
+	private static Vector2I FindOpenPlatformPosition(Vector2I topLeftPos, int width, int height, TileMapLayer tileMap) {
+		while (!IsPlatformAreaClear(topLeftPos, width, height, tileMap)) {
+			topLeftPos.X++;
+		}
+
+		return topLeftPos;
+	}
+
+	private static bool IsPlatformAreaClear(Vector2I topLeftPos, int width, int height, TileMapLayer tileMap) {
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				Vector2I cellPos = new(topLeftPos.X + x, topLeftPos.Y + y);
+				if (tileMap.GetCellSourceId(cellPos) != -1) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+}
