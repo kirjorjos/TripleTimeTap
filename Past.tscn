@@ -179,3 +179,69 @@ texture_filter = 1
 use_parent_material = true
 scale = Vector2(2, 2)
 tile_set = SubResource("TileSet_p0u22")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=616448376]
+
+[node name="Control" type="Control" parent="CanvasLayer" unique_id=425673657]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="Score" type="Label" parent="CanvasLayer/Control" unique_id=800379186]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 23.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 40
+text = "0"
+horizontal_alignment = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control" unique_id=1293643626]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -180.0
+offset_top = -140.0
+offset_right = 180.0
+offset_bottom = 140.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="Text" type="Label" parent="CanvasLayer/Control/VBoxContainer" unique_id=267248342]
+custom_minimum_size = Vector2(320, 80)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 48
+text = "Game Over"
+horizontal_alignment = 1
+
+[node name="Restart" type="Button" parent="CanvasLayer/Control/VBoxContainer" unique_id=920493269]
+custom_minimum_size = Vector2(320, 72)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 32
+text = "Restart"
+
+[node name="Main Menu" type="Button" parent="CanvasLayer/Control/VBoxContainer" unique_id=989356460]
+custom_minimum_size = Vector2(320, 72)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 32
+text = "Main Menu"
+
+[connection signal="pressed" from="CanvasLayer/Control/VBoxContainer/Restart" to="." method="OnRestartButtonPressed"]
+[connection signal="pressed" from="CanvasLayer/Control/VBoxContainer/Main Menu" to="." method="OnMainMenuButtonPressed"]

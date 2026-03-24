@@ -8,16 +8,19 @@ public partial class GlobalEvents : Node {
 	private static int MaxPlatformWidth = 30;
 	private bool isActionHeld;
 	private Actions lastAction;
-	public static Node2D currentWorld;
+	public static Past currentWorld;
 	public static double runSpeed = 200.0;
 	private const double jumpStrength = -120.0;
 	private const double gravity = 1200.0;
+	private const float collisionSnapTolerance = 0.05f;
 	private double yVelocity = 0.0;
 	private bool isRolling = false;
+	private bool isMovementPaused = false;
 	private static Random rng = new Random();
 	private static int nextSpawnX = 0;
 	private static int lastY = 0;
 	private static int lastCleanupX = -100;
+	private static int lowestPlatformY;
 
 	public enum Actions {
 		jump,
@@ -25,9 +28,19 @@ public partial class GlobalEvents : Node {
 		clear
 	}
 
+public struct SceneryItem {
+	public Vector2I AtlasPos;
+	public Vector2I Size;
+
+	public SceneryItem(Vector2I pos, Vector2I size) {
+		AtlasPos = pos;
+		Size = size;
+	}
+}
+
 
 	public override void _Input(InputEvent @event) {
-		if (currentWorld == null) return;
+		if (currentWorld == null || isMovementPaused) return;
 
 		if (@event.IsActionPressed("MainButton")) {
 			CharacterBody2D player = currentWorld.GetNode<CharacterBody2D>("Player");
@@ -50,7 +63,8 @@ public partial class GlobalEvents : Node {
 	}
 
 	public override void _Process(double delta) {
-		if (currentWorld == null) return;
+		if (currentWorld == null || isMovementPaused) return;
+		currentWorld.TickLoop(isRolling);
 
 		if (isActionHeld && isRolling) {
 			TickLoop(Actions.roll);
@@ -75,24 +89,32 @@ public partial class GlobalEvents : Node {
 		} else if (isGrounded) {
 			animation.Play("Run");
 		}
-		float horizontalMotion = (float)runSpeed * (float)delta;
-		Transform2D testTransform = new Transform2D(0, player.GlobalPosition);
-		if (player.TestMove(player.GlobalTransform, new Vector2(1, 0))) {
-			horizontalMotion = 0;
+		Vector2 desiredMovement = new Vector2((float)runSpeed * (float)delta, (float)yVelocity * (float)delta);
+		Vector2 resolvedMovement = ResolveMovement(player, desiredMovement);
+		if (resolvedMovement.X < desiredMovement.X) {
 			GD.Print("wall hit");
 		}
-
-		Vector2 motion = new Vector2(horizontalMotion, (float)yVelocity * (float)delta);
+		if (resolvedMovement.Y != desiredMovement.Y) {
+			yVelocity = 0;
+		}
 
 		foreach (Node child in currentWorld.GetChildren()) {
 			if (child is TileMapLayer layer) {
-				layer.Position -= motion;
+				layer.Position -= resolvedMovement;
 			}
 		}
 
 		// Platform Generation
-		if (currentWorld is TimeWorld timeWorld) {
+		if (currentWorld is Past timeWorld) {
 			Vector2I playerTilePos = timeWorld.tileMap.LocalToMap(timeWorld.tileMap.ToLocal(player.GlobalPosition));
+			if (playerTilePos.Y > lowestPlatformY + MaxPlatformHeight+2) {
+				PauseMovement();
+				if (currentWorld is Past pastWorld) {
+					pastWorld.ShowControlOverlay();
+				}
+				return;
+			}
+
 			if (playerTilePos.X + 15 > nextSpawnX) {
 				int gap = rng.Next(3, 7);
 				int yShift = rng.Next(-2, 3);
@@ -113,6 +135,8 @@ public partial class GlobalEvents : Node {
 	}
 
 	private void TickLoop(Actions currentAction) {
+		if (isMovementPaused) return;
+
 		CharacterBody2D player = currentWorld.GetNode<CharacterBody2D>("Player");
 		CollisionShape2D collision = player.GetNode<CollisionShape2D>("PlayerCollision");
 
@@ -141,7 +165,7 @@ public partial class GlobalEvents : Node {
 	}
 
 
-	public static Vector2I MakeMetaTile(Vector2I topLeftPos, TimeWorld world) {
+	public static Vector2I MakeMetaTile(Vector2I topLeftPos, Past world) {
 		TileMapLayer tileMap = world.tileMap;
 
 		int width = rng.Next(MinPlatformWidth, MaxPlatformWidth);
@@ -196,6 +220,7 @@ public partial class GlobalEvents : Node {
 			}
 		}
 
+		lowestPlatformY = Math.Max(lowestPlatformY, topLeftPos.Y + height - 1);
 		nextSpawnX = topLeftPos.X + width;
 		lastY = topLeftPos.Y;
 
@@ -221,5 +246,64 @@ public partial class GlobalEvents : Node {
 		}
 
 		return true;
+	}
+
+	private Vector2 ResolveMovement(CharacterBody2D player, Vector2 desiredMovement) {
+		float horizontalDistanceToPlatform = ResolveDirectionalMovement(player, new Vector2(desiredMovement.X, 0));
+		Transform2D transformAfterHorizontalMove = player.GlobalTransform.TranslatedLocal(new Vector2(horizontalDistanceToPlatform, 0));
+		float verticalDistanceToPlatform = ResolveDirectionalMovement(player, new Vector2(0, desiredMovement.Y), transformAfterHorizontalMove);
+
+		return new Vector2(horizontalDistanceToPlatform, verticalDistanceToPlatform);
+	}
+
+	private float ResolveDirectionalMovement(CharacterBody2D player, Vector2 axisMovement, Transform2D? startingTransform = null) {
+		if (Mathf.IsZeroApprox(axisMovement.X) && Mathf.IsZeroApprox(axisMovement.Y)) {
+			return 0;
+		}
+
+		Transform2D testTransform = startingTransform ?? player.GlobalTransform;
+		if (!player.TestMove(testTransform, axisMovement)) {
+			return axisMovement.X != 0 ? axisMovement.X : axisMovement.Y;
+		}
+
+		float minAllowedDistance = 0;
+		float maxAllowedDistance = axisMovement.X != 0 ? Mathf.Abs(axisMovement.X) : Mathf.Abs(axisMovement.Y);
+		float movementDirection = Mathf.Sign(axisMovement.X != 0 ? axisMovement.X : axisMovement.Y);
+
+		while (maxAllowedDistance - minAllowedDistance > collisionSnapTolerance) {
+			float totalDistance = (minAllowedDistance + maxAllowedDistance) * 0.5f;
+			Vector2 totalMovement = (axisMovement.X == 0)
+				? new Vector2(0, totalDistance * movementDirection)
+				: new Vector2(totalDistance * movementDirection, 0);
+
+			if (player.TestMove(testTransform, totalMovement)) {
+				maxAllowedDistance = totalDistance;
+			} else {
+				minAllowedDistance = totalDistance;
+			}
+		}
+
+		return minAllowedDistance * movementDirection;
+	}
+
+	public static void ResetPlatformGeneration() {
+		nextSpawnX = 0;
+		lastY = 0;
+		lastCleanupX = -100;
+		lowestPlatformY = int.MinValue;
+	}
+
+	public void ResumeMovement() {
+		isActionHeld = false;
+		isRolling = false;
+		yVelocity = 0;
+		isMovementPaused = false;
+	}
+
+	private void PauseMovement() {
+		isActionHeld = false;
+		isRolling = false;
+		yVelocity = 0;
+		isMovementPaused = true;
 	}
 }
